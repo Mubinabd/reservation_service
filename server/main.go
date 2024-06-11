@@ -19,8 +19,8 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	s := grpc.NewServer()
 	
+	s := grpc.NewServer()
 	pb.RegisterReservationServiceServer(s, service.NewReservationService(db))
 	pb.RegisterRestaurantServiceServer(s, service.NewRestaurantService(db))
 	pb.RegisterMenuServiceServer(s, service.NewMenuService(db))

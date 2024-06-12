@@ -38,6 +38,10 @@ func (s *ReservationService) DeleteReservation(ctx context.Context, req *pb.ById
 	return s.stg.Reservation().DeleteReservation(req)
 }
 
-func (s *ReservationService) GetReservationByFilter(ctx context.Context, req *pb.FilterByTime) (*pb.Reservations, error) {
+func (s *ReservationService) GetAllReservation(ctx context.Context, req *pb.FilterByTime) (*pb.Reservations, error) {
 	return s.stg.Reservation().GetReservationByFilter(req)
+}
+
+func (s *ReservationService) GetTotalSum(ctx context.Context, req *pb.ById) (*pb.Total, error) {
+    return s.stg.Reservation().GetTotalSum(req)
 }

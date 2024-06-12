@@ -24,6 +24,7 @@ func main() {
 	pb.RegisterReservationServiceServer(s, service.NewReservationService(db))
 	pb.RegisterRestaurantServiceServer(s, service.NewRestaurantService(db))
 	pb.RegisterMenuServiceServer(s, service.NewMenuService(db))
+	pb.RegisterOrderServiceServer(s, service.NewOrderService(db))
 
 	log.Printf("server listening at %v", liss.Addr())
 	if err := s.Serve(liss); err != nil {

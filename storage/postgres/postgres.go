@@ -15,6 +15,7 @@ type Storage struct {
 	ReservationS storage.ReservationI
 	RestaurantS storage.RestaurantI
 	MenuS storage.MenuI
+	OrderS storage.OrdersI
 }
 
 func ConnectDB() (*Storage, error) {
@@ -36,11 +37,13 @@ func ConnectDB() (*Storage, error) {
 	resS := NewReservationStorage(db)
 	restS := NewRestaurantStorage(db)
 	menuS := NewMenuRepo(db)
+	orderS := NewOrderStorage(db)
 	return &Storage{
 		db:    db,
 		ReservationS: resS,
 		RestaurantS: restS,
 		MenuS: menuS,
+		OrderS: orderS,
 	}, nil
 }
 func (s *Storage) Reservation() storage.ReservationI {
@@ -62,4 +65,11 @@ func (s *Storage) Menu() storage.MenuI {
         s.MenuS = NewMenuRepo(s.db)
     }
     return s.MenuS
+}
+
+func (s *Storage) Orders() storage.OrdersI {
+	if s.OrderS == nil {
+        s.OrderS = NewOrderStorage(s.db)
+    }
+    return s.OrderS
 }

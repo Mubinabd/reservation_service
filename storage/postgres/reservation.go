@@ -3,6 +3,7 @@ package postgres
 import (
 	"database/sql"
 	"fmt"
+	"log"
 	"strings"
 
 	pb "github.com/Mubinabd/reservation_service/genproto"
@@ -132,4 +133,30 @@ func (r *ReservationStorage) GetReservationByFilter(filter *pb.FilterByTime) (*p
 	}
 
 	return &reservations, nil
+}
+
+func (r *ReservationStorage) GetTotalSum(id *pb.ById) (*pb.Total, error) {
+	query := `
+	SELECT 
+		SUM(m.price * ro.quantity) AS total_sum
+	FROM 
+		reservationsorders ro
+	JOIN 
+		menu m ON ro.menu_item_id = m.id
+	WHERE 
+		ro.reservation_id = $1
+	AND 
+		ro.deleted_at = 0
+	AND 
+		m.deleted_at = 0;`
+	
+	var total float32
+	err := r.db.QueryRow(query, id.Id).Scan(&total)
+	log.Println(111111,total,1111111111,err)
+	if err!= nil {
+        return nil, err
+    }
+	return &pb.Total{
+        Total: total,
+    }, nil	
 }

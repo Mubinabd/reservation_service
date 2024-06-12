@@ -7,6 +7,15 @@ type StorageI interface {
 	Reservation() ReservationI
 	Restaurant() RestaurantI
 	Menu() MenuI
+	Orders() OrdersI
+}
+
+type OrdersI interface {
+	CreateOrder(req *pb.Order) (*pb.Void, error)
+	UpdateOrder(req *pb.Order) (*pb.Void, error)
+	DeleteOrder(id *pb.ById) (*pb.Void, error)
+	GetOrder(req *pb.ById) (*pb.Order, error)
+	GetAllOrders(req *pb.Void) (*pb.Orders, error)
 }
 
 type ReservationI interface {
@@ -15,6 +24,7 @@ type ReservationI interface {
 	GetReservation(id *pb.ById) (*pb.Reservation, error)
 	DeleteReservation(id *pb.ById) (*pb.Void, error)
 	GetReservationByFilter(filter *pb.FilterByTime) (*pb.Reservations, error)
+	GetTotalSum(id *pb.ById) (*pb.Total, error)
 }
 type RestaurantI interface {
 	CreateRestaurant(req *pb.CreateRestaurantReq) (*pb.Void, error)

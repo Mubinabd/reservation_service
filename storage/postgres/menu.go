@@ -96,7 +96,7 @@ func (m *MenuRepo) GetById(id *pb.ById) (*pb.Menu, error) {
 func (m *MenuRepo) GetAll(flt *pb.MenuFilter) (*pb.Menus, error) {
 
 	baseQuery := `
-		SELECT id, restaurant_id, name, description, price 
+		SELECT id, restaurants_id, name, description, price 
 		FROM menu 
 		WHERE deleted_at = 0`
 

@@ -24,6 +24,7 @@ const (
 	ReservationService_UpdateReservation_FullMethodName = "/restaurant_protos.ReservationService/UpdateReservation"
 	ReservationService_DeleteReservation_FullMethodName = "/restaurant_protos.ReservationService/DeleteReservation"
 	ReservationService_GetAllReservation_FullMethodName = "/restaurant_protos.ReservationService/GetAllReservation"
+	ReservationService_GetTotalSum_FullMethodName       = "/restaurant_protos.ReservationService/GetTotalSum"
 )
 
 // ReservationServiceClient is the client API for ReservationService service.
@@ -35,6 +36,7 @@ type ReservationServiceClient interface {
 	UpdateReservation(ctx context.Context, in *ReservationCreate, opts ...grpc.CallOption) (*Void, error)
 	DeleteReservation(ctx context.Context, in *ById, opts ...grpc.CallOption) (*Void, error)
 	GetAllReservation(ctx context.Context, in *FilterByTime, opts ...grpc.CallOption) (*Reservations, error)
+	GetTotalSum(ctx context.Context, in *ById, opts ...grpc.CallOption) (*Total, error)
 }
 
 type reservationServiceClient struct {
@@ -95,6 +97,16 @@ func (c *reservationServiceClient) GetAllReservation(ctx context.Context, in *Fi
 	return out, nil
 }
 
+func (c *reservationServiceClient) GetTotalSum(ctx context.Context, in *ById, opts ...grpc.CallOption) (*Total, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Total)
+	err := c.cc.Invoke(ctx, ReservationService_GetTotalSum_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ReservationServiceServer is the server API for ReservationService service.
 // All implementations must embed UnimplementedReservationServiceServer
 // for forward compatibility
@@ -104,6 +116,7 @@ type ReservationServiceServer interface {
 	UpdateReservation(context.Context, *ReservationCreate) (*Void, error)
 	DeleteReservation(context.Context, *ById) (*Void, error)
 	GetAllReservation(context.Context, *FilterByTime) (*Reservations, error)
+	GetTotalSum(context.Context, *ById) (*Total, error)
 	mustEmbedUnimplementedReservationServiceServer()
 }
 
@@ -125,6 +138,9 @@ func (UnimplementedReservationServiceServer) DeleteReservation(context.Context, 
 }
 func (UnimplementedReservationServiceServer) GetAllReservation(context.Context, *FilterByTime) (*Reservations, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAllReservation not implemented")
+}
+func (UnimplementedReservationServiceServer) GetTotalSum(context.Context, *ById) (*Total, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetTotalSum not implemented")
 }
 func (UnimplementedReservationServiceServer) mustEmbedUnimplementedReservationServiceServer() {}
 
@@ -229,6 +245,24 @@ func _ReservationService_GetAllReservation_Handler(srv interface{}, ctx context.
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ReservationService_GetTotalSum_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ById)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ReservationServiceServer).GetTotalSum(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ReservationService_GetTotalSum_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ReservationServiceServer).GetTotalSum(ctx, req.(*ById))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ReservationService_ServiceDesc is the grpc.ServiceDesc for ReservationService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -255,6 +289,10 @@ var ReservationService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetAllReservation",
 			Handler:    _ReservationService_GetAllReservation_Handler,
+		},
+		{
+			MethodName: "GetTotalSum",
+			Handler:    _ReservationService_GetTotalSum_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -45,3 +45,7 @@ func (s *ReservationService) GetAllReservation(ctx context.Context, req *pb.Filt
 func (s *ReservationService) GetTotalSum(ctx context.Context, req *pb.ById) (*pb.Total, error) {
     return s.stg.Reservation().GetTotalSum(req)
 }
+
+func (s *ReservationService) CheckReservation(ctx context.Context, req *pb.ResrvationTime) (*pb.Void, error) {
+    return s.stg.Reservation().CheckReservation(req)
+}

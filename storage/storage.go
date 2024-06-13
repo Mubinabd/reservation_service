@@ -25,6 +25,7 @@ type ReservationI interface {
 	DeleteReservation(id *pb.ById) (*pb.Void, error)
 	GetReservationByFilter(filter *pb.FilterByTime) (*pb.Reservations, error)
 	GetTotalSum(id *pb.ById) (*pb.Total, error)
+	CheckReservation(timeReq *pb.ResrvationTime) (*pb.Void, error)
 }
 type RestaurantI interface {
 	CreateRestaurant(req *pb.CreateRestaurantReq) (*pb.Void, error)

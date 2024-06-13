@@ -3,7 +3,9 @@ package postgres
 import (
 	"database/sql"
 	"fmt"
-	"log"
+	"time"
+
+	// "log"
 	"strings"
 
 	pb "github.com/Mubinabd/reservation_service/genproto"
@@ -19,8 +21,11 @@ func NewReservationStorage(db *sql.DB) *ReservationStorage {
 	}
 }
 
-
 func (r *ReservationStorage) CreateReservation(res *pb.ReservationCreate) (*pb.Void, error) {
+	_,err := r.CheckReservation(&pb.ResrvationTime{ReservationTime: res.ReservationTime,RestaurantId: res.RestaurantId})
+	if err!= nil {
+        return nil, err
+    }
 	query := `insert into reservations(
 		id,
 		user_id,
@@ -28,7 +33,7 @@ func (r *ReservationStorage) CreateReservation(res *pb.ReservationCreate) (*pb.V
 		reservation_time,
 		status
 	) values($1,$2,$3,$4,$5) `
-	_, err := r.db.Exec(query, res.Id, res.UserId, res.RestaurantId, res.ReservationTime, res.Status)
+	_, err = r.db.Exec(query, res.Id, res.UserId, res.RestaurantId, res.ReservationTime, res.Status)
 	if err != nil {
 		return nil, err
 	}
@@ -36,6 +41,11 @@ func (r *ReservationStorage) CreateReservation(res *pb.ReservationCreate) (*pb.V
 }
 
 func (r *ReservationStorage) UpdateReservation(res *pb.ReservationCreate) (*pb.Void, error) {
+	_,err := r.CheckReservation(&pb.ResrvationTime{ReservationTime: res.ReservationTime,RestaurantId: res.RestaurantId})
+	if err!= nil {
+        return nil, err
+    }
+
 	query := `update reservations set
         user_id = $1,
         restaurant_id = $2,
@@ -43,7 +53,7 @@ func (r *ReservationStorage) UpdateReservation(res *pb.ReservationCreate) (*pb.V
         status = $4,
 		updated_at = now()
     where id = $5 and deleted_at = 0`
-	_, err := r.db.Exec(query, res.UserId, res.RestaurantId, res.ReservationTime, res.Status, res.Id)
+	_, err = r.db.Exec(query, res.UserId, res.RestaurantId, res.ReservationTime, res.Status, res.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -149,14 +159,61 @@ func (r *ReservationStorage) GetTotalSum(id *pb.ById) (*pb.Total, error) {
 		ro.deleted_at = 0
 	AND 
 		m.deleted_at = 0;`
-	
+
 	var total float32
 	err := r.db.QueryRow(query, id.Id).Scan(&total)
-	log.Println(111111,total,1111111111,err)
-	if err!= nil {
-        return nil, err
-    }
+	// log.Println(111111,total,1111111111,err)
+	if err != nil {
+		return nil, err
+	}
 	return &pb.Total{
-        Total: total,
-    }, nil	
+		Total: total,
+	}, nil
+}
+
+func parseTime(timeStr string) (time.Time, error) {
+	formats := []string{
+		time.RFC3339,           // "2006-01-02T15:04:05Z07:00"
+		"2006-01-02 15:04:05",  // "2006-01-02 15:04:05"
+	}
+	var t time.Time
+	var err error
+	for _, format := range formats {
+		t, err = time.Parse(format, timeStr)
+		if err == nil {
+			return t, nil
+		}
+	}
+	return time.Time{}, fmt.Errorf("invalid time format: %v", timeStr)
+}
+
+func (r *ReservationStorage) CheckReservation(timeReq *pb.ResrvationTime) (*pb.Void, error) {
+
+	reservationTime, err := parseTime(timeReq.ReservationTime)
+	if err != nil {
+		return nil, fmt.Errorf("invalid reservation time format: %w", err)
+	}
+
+	endTime := reservationTime.Add(59 * time.Minute)
+
+	query := `
+		SELECT COUNT(*)
+		FROM reservations
+		WHERE restaurant_id = $1
+		AND reservation_time >= $2
+		AND reservation_time <= $3
+		AND deleted_at = 0
+	`
+
+	var count int
+	err = r.db.QueryRow(query, timeReq.RestaurantId, reservationTime, endTime).Scan(&count)
+	if err != nil {
+		return nil, fmt.Errorf("error checking reservation: %w", err)
+	}
+
+	if count > 0 {
+		return nil, fmt.Errorf("the time slot from %s to %s is already reserved", reservationTime, endTime)
+	}
+
+	return &pb.Void{}, nil
 }
